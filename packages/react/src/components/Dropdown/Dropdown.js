@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useSelect } from 'downshift';
 import { settings } from 'carbon-components';
 import cx from 'classnames';
@@ -20,6 +20,8 @@ import { mapDownshiftProps } from '../../tools/createPropAdapter';
 import mergeRefs from '../../tools/mergeRefs';
 import deprecate from '../../prop-types/deprecate';
 
+import AppendToPlugin from './plugins/appendToPlugin';
+
 const { prefix } = settings;
 
 const defaultItemToString = (item) => {
@@ -32,6 +34,7 @@ const defaultItemToString = (item) => {
 
 const Dropdown = React.forwardRef(function Dropdown(
   {
+    appendTo,
     className: containerClassName,
     disabled,
     direction,
@@ -128,6 +131,22 @@ const Dropdown = React.forwardRef(function Dropdown(
     }
   }
 
+  const menuRef = useRef();
+  const dropdownRef = useRef();
+  useEffect(() => {
+    if (menuRef.current && dropdownRef.current && appendTo && appendTo.current) {
+      const config = {
+        menuContainer: menuRef.current,
+        config: {
+          appendTo: appendTo.current
+        },
+        _positionElement: dropdownRef.current,
+      };
+      const plugin = AppendToPlugin(config);
+      plugin.onPreMenuPosition()
+    }
+  }, [menuRef, dropdownRef]);
+
   return (
     <div className={wrapperClasses} {...other}>
       {titleText && (
@@ -145,7 +164,8 @@ const Dropdown = React.forwardRef(function Dropdown(
         warnText={warnText}
         light={light}
         isOpen={isOpen}
-        id={id}>
+        id={id}
+        ref={dropdownRef}>
         {invalid && (
           <WarningFilled16 className={`${prefix}--list-box__invalid-icon`} />
         )}
@@ -166,7 +186,7 @@ const Dropdown = React.forwardRef(function Dropdown(
           </span>
           <ListBox.MenuIcon isOpen={isOpen} translateWithId={translateWithId} />
         </button>
-        <ListBox.Menu {...getMenuProps()}>
+        <ListBox.Menu {...getMenuProps()} ref={menuRef}>
           {isOpen &&
             items.map((item, index) => {
               const itemProps = getItemProps({ item, index });

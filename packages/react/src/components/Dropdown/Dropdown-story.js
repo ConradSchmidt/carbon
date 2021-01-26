@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { action } from '@storybook/addon-actions';
 import { withKnobs, boolean, select, text } from '@storybook/addon-knobs';
 import Dropdown from '../Dropdown';
@@ -54,6 +54,7 @@ const directions = {
 const props = () => ({
   id: text('Dropdown ID (id)', 'carbon-dropdown-example'),
   size: select('Field size (size)', sizes, undefined) || undefined,
+  appendTo: boolean('Attach menu to container (appendTo)', false),
   direction: select('Dropdown direction (direction)', directions, 'bottom'),
   label: text('Label (label)', 'Dropdown menu options'),
   ariaLabel: text('Aria Label (ariaLabel)', 'Dropdown'),
@@ -134,3 +135,21 @@ export const Skeleton = () => (
     <DropdownSkeleton />
   </div>
 );
+
+export const Overflow = () => {
+  const appendToRef = useRef();
+  const propsObj = props();
+  return (
+    <div key={propsObj.appendTo}>
+      <div style={{ width: 300, overflow: 'auto' }}>
+        <Dropdown
+          {...propsObj}
+          items={items}
+          itemToString={(item) => (item ? item.text : '')}
+          appendTo={propsObj.appendTo ? appendToRef : null}
+        />
+      </div>
+      <div ref={appendToRef} style={{ marginTop: '3rem', marginLeft: '3rem' }}></div>
+    </div>
+  );
+}
